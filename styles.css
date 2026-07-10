@@ -429,6 +429,7 @@ p {
 
 .hero-copy {
   max-width: 780px;
+  display: block;
 }
 
 .eyebrow {
