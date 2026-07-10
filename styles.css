@@ -150,7 +150,7 @@ body::before {
   padding: 0;
   width: clamp(82px, 10vw, 104px);
   height: clamp(82px, 10vw, 104px);
-
+  margin-bottom: 40px;
   color: white;
 
   background:
