@@ -14,10 +14,47 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <script>
+  try {
+    if (
+      sessionStorage.getItem(
+        "avalanche-site-intro-shown"
+      ) === "1"
+    ) {
+      document.documentElement.classList.add(
+        "site-intro-seen"
+      );
+    }
+  } catch {}
+</script>
     <link rel="stylesheet" href="styles.css?v=clean-2026-07-07" />
   </head>
 
   <body>
+    <div
+    class="site-intro"
+    id="siteIntro"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+    <div class="site-intro__content" aria-hidden="true">
+      <span class="site-intro__mark">A</span>
+
+      <div class="site-intro__brand">
+        <strong>Avalanche</strong>
+        <span>Lanches e Salgados</span>
+      </div>
+
+      <p class="site-intro__message">
+        Preparando sua Avalanche de sabor...
+      </p>
+    </div>
+
+    <span class="visually-hidden">
+      Carregando o cardápio da Avalanche Lanches e Salgados.
+    </span>
+  </div>
     <header class="topbar">
       <a class="brand" href="#inicio" aria-label="Avalanche Lanches e Salgados">
         <span class="brand-mark">A</span>

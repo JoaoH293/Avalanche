@@ -1,5 +1,175 @@
 import { MENU_CATEGORIES, MENU_ITEMS, RESTAURANT } from "./menu-data.js";
+/* =========================================================
+   ABERTURA DO SITE
+========================================================= */
 
+(() => {
+  const intro = document.getElementById("siteIntro");
+
+  if (!intro) {
+    document.body.classList.add("site-ready");
+    return;
+  }
+
+  const CONFIG = {
+    // Tempo mínimo normal de exibição.
+    minimumDuration: 1500,
+
+    // Limite de segurança.
+    maximumDuration: 2800,
+
+    // Deve ser igual ou um pouco maior que o fade do CSS.
+    fadeDuration: 470,
+
+    // true: mostra uma vez por aba/sessão.
+    // false: mostra em todo carregamento.
+    showOncePerSession: true,
+  };
+
+  const SESSION_KEY = "avalanche-site-intro-shown";
+
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  const startedAt = performance.now();
+
+  const minimumDuration = reducedMotion
+    ? 0
+    : CONFIG.minimumDuration;
+
+  const maximumDuration = reducedMotion
+    ? 300
+    : CONFIG.maximumDuration;
+
+  const fadeDuration = reducedMotion
+    ? 0
+    : CONFIG.fadeDuration;
+
+  let isClosing = false;
+  let safetyTimer;
+
+  const wasShownInThisSession = () => {
+    if (!CONFIG.showOncePerSession) {
+      return false;
+    }
+
+    try {
+      return sessionStorage.getItem(SESSION_KEY) === "1";
+    } catch {
+      return false;
+    }
+  };
+
+  const saveSessionState = () => {
+    if (!CONFIG.showOncePerSession) {
+      return;
+    }
+
+    try {
+      sessionStorage.setItem(SESSION_KEY, "1");
+    } catch {
+      /*
+       O site continua funcionando normalmente caso
+       o navegador bloqueie o sessionStorage.
+      */
+    }
+  };
+
+  const removeIntro = () => {
+    if (intro.isConnected) {
+      intro.remove();
+    }
+
+    document.body.classList.remove("intro-active");
+  };
+
+  const closeIntro = () => {
+    if (isClosing) {
+      return;
+    }
+
+    isClosing = true;
+
+    window.clearTimeout(safetyTimer);
+
+    saveSessionState();
+
+    /*
+     Libera o conteúdo antes do fim do fade do overlay.
+     Isso faz as duas animações acontecerem juntas.
+    */
+    document.body.classList.add("site-ready");
+
+    intro.classList.add("site-intro--leaving");
+
+    /*
+     O conteúdo visual deixa de ser anunciado
+     quando a abertura começa a desaparecer.
+    */
+    intro.setAttribute("aria-hidden", "true");
+
+    window.setTimeout(
+      removeIntro,
+      fadeDuration + 50
+    );
+  };
+
+  const closeRespectingMinimumDuration = () => {
+    const elapsedTime =
+      performance.now() - startedAt;
+
+    const remainingTime = Math.max(
+      0,
+      minimumDuration - elapsedTime
+    );
+
+    window.setTimeout(
+      closeIntro,
+      remainingTime
+    );
+  };
+
+  /*
+   Se a abertura já apareceu nesta sessão,
+   ela é removida imediatamente.
+  */
+  if (wasShownInThisSession()) {
+    document.body.classList.add("site-ready");
+
+    removeIntro();
+
+    return;
+  }
+
+  document.body.classList.add("intro-active");
+
+  /*
+   A introdução normalmente termina após o evento load,
+   respeitando o tempo mínimo.
+  */
+  if (document.readyState === "complete") {
+    closeRespectingMinimumDuration();
+  } else {
+    window.addEventListener(
+      "load",
+      closeRespectingMinimumDuration,
+      {
+        once: true,
+      }
+    );
+  }
+
+  /*
+   Limite de segurança:
+   a abertura nunca fica presa esperando imagens,
+   fontes ou outros arquivos.
+  */
+  safetyTimer = window.setTimeout(
+    closeIntro,
+    maximumDuration
+  );
+})();
 const moneyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
